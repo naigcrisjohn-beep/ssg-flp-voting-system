@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSG and FLP Voting System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        .admin-pattern {
+            background-image: radial-gradient(circle at 25px 25px, rgba(255,255,255,0.2) 2%, transparent 50%);
+            background-size: 50px 50px;
+        }
+        .vote-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .vote-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .position-badge {
+            background: linear-gradient(45deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .candidate-option {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        .candidate-option:hover {
+            border-color: #4f46e5;
+            background-color: #f8fafc;
+        }
+        .candidate-option.selected {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .success-animation {
+            animation: successPulse 0.6s ease-in-out;
+        }
+        @keyframes successPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-vote-yea text-2xl"></i>
+                    <h1 class="text-2xl font-bold">SSG & FLP Voting System</h1>
+                </div>
+                <div id="navActions" class="flex items-center space-x-4">
+                    <!-- Dynamic navigation items will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center py-12 px-4">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/48f7a9df-e1b5-47cd-bde3-ffb2dc8ec1c8.png" alt="Voting system logo with ballot box and checkmark in blue and purple gradient" class="mx-auto h-20 w-20 rounded-full shadow-lg">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900">SSG & FLP VOTING SYSTEM</h2>
+                <p class="mt-2 text-sm text-gray-600">Sign in with your Gmail account to vote</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl card-shadow">
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Gmail Address</label>
+                        <div class="mt-1 relative">
+                            <input type="email" id="email" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                   placeholder="your.email@gmail.com">
+                            <i class="fas fa-envelope absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <div class="mt-1 relative">
+                            <input type="password" id="password" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                   placeholder="Enter your password">
+                            <i class="fas fa-lock absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="remember" class="ml-2 block text-sm text-gray-900">Remember me</label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Admin Login</a>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover-scale">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In to Vote
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-xl card-shadow max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <i class="fas fa-user-shield text-4xl text-indigo-600 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-900">Admin Access</h3>
+                <p class="text-gray-600">Enter admin credentials</p>
+            </div>
+            <form id="adminLoginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Admin Username</label>
+                    <input type="text" id="adminUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Admin Password</label>
+                    <input type="password" id="adminPassword" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Login</button>
+                    <button type="button" onclick="closeAdminModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="hidden min-h-screen">
+        <div class="admin-pattern bg-indigo-600 text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-2">Admin Dashboard</h2>
+                        <p class="text-indigo-200">Manage candidates for SSG and FLP elections</p>
+                    </div>
+                    <button onclick
+
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- SSG Management -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-users text-blue-600 text-2xl mr-3"></i>
+                        <h3 class="text-2xl font-bold text-gray-900">SSG Candidates</h3>
+                    </div>
+                    <div id="ssgCandidates" class="space-y-4">
+                        <!-- SSG candidates will be displayed here -->
+                    </div>
+                    <button onclick="showAddCandidateModal('SSG')" class="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add SSG Candidate
+                    </button>
+                </div>
+
+                <!-- FLP Management -->
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-graduation-cap text-purple-600 text-2xl mr-3"></i>
+                        <h3 class="text-2xl font-bold text-gray-900">FLP Candidates</h3>
+                    </div>
+                    <div id="flpCandidates" class="space-y-4">
+                        <!-- FLP candidates will be displayed here -->
+                    </div>
+                    <button onclick="showAddCandidateModal('FLP')" class="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add FLP Candidate
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="mt-8 bg-white rounded-xl card-shadow p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-bar text-green-600 text-2xl mr-3"></i>
+                        <h3 class="text-2xl font-bold text-gray-900">Voting Results</h3>
+                    </div>
+                    <button onclick="exportResults()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center">
+                        <i class="fas fa-download mr-2"></i>
+                        Export Results
+                    </button>
+                </div>
+                <div id="resultsContainer" class="grid md:grid-cols-2 gap-6">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Candidate Modal -->
+    <div id="addCandidateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-xl card-shadow max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">Add New Candidate</h3>
+            <form id="addCandidateForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Candidate Name</label>
+                    <input type="text" id="candidateName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Position</label>
+                    <select id="candidatePosition" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select Position</option>
+                        <option value="President">President</option>
+                        <option value="Vice President">Vice President</option>
+                        <option value="Secretary">Secretary</option>
+                        <option value="Treasurer">Treasurer</option>
+                        <option value="Auditor">Auditor</option>
+                        <option value="PIO">PIO (Public Information Officer)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Organization</label>
+                    <input type="text" id="candidateOrg" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
+                </div>
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Add Candidate</button>
+                    <button type="button" onclick="closeAddCandidateModal()" class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Voting Page -->
+    <div id="votingPage" class="hidden min-h-screen">
+        <div class="gradient-bg text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold mb-2">Cast Your Vote</h2>
+                    <p class="text-indigo-200">Select your preferred candidates for each position</p>
+                    <div class="mt-4 flex justify-center space-x-8">
+                        <button id="ssgTab" onclick="switchVotingTab('SSG')" class="px-6 py-2 rounded-full bg-white text-indigo-600 font-semibold">
+                            SSG Elections
+                        </button>
+                        <button id="flpTab" onclick="switchVotingTab('FLP')" class="px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold">
+                            FLP Elections
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-4 py-8">
+            <div id="votingContainer" class="max-w-4xl mx-auto">
+                <!-- Voting forms will be displayed here -->
+            </div>
+            
+            <div class="max-w-4xl mx-auto mt-8 text-center">
+                <button id="submitVoteBtn" onclick="submitVotes()" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 text-lg font-semibold hover-scale disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-vote-yea mr-2"></i>
+                    Submit All Votes
+                </button>
+                <p class="mt-4 text-sm text-gray-600">Make sure to review your selections before submitting. Votes cannot be changed once submitted.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Page -->
+    <div id="successPage" class="hidden min-h-screen flex items-center justify-center">
+        <div class="text-center max-w-md mx-auto px-4">
+            <div class="success-animation bg-white rounded-xl card-shadow p-8">
+                <i class="fas fa-check-circle text-6xl text-green-600 mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Vote Submitted Successfully!</h2>
+                <p class="text-gray-600 mb-6">Thank you for participating in the election. Your vote has been recorded securely.</p>
+                <div class="space-y-3">
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-clock mr-2"></i>
+                        Submitted on: <span id="voteTimestamp"></span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Your vote is encrypted and secure
+                    </p>
+                </div>
+                <button onclick="logout()" class="mt-6 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-xl text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-gray-700">Processing your vote...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global state management
+        const state = {
+            currentUser: null,
+            isAdmin: false,
+            candidates: {
+                SSG: {},
+                FLP: {}
+            },
+            votes: {},
+            currentVotingTab: 'SSG',
+            userVotes: {
+                SSG: {},
+                FLP: {}
+            }
+        };
+
+        // Positions array
+        const positions = ['President', 'Vice President', 'Secretary', 'Treasurer', 'Auditor', 'PIO'];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStoredData();
+            initializeApp();
+            setupEventListeners();
+        });
+
+        function loadStoredData() {
+            // Load candidates from localStorage
+            const storedCandidates = localStorage.getItem('votingCandidates');
+            if (storedCandidates) {
+                state.candidates = JSON.parse(storedCandidates);
+            } else {
+                // Initialize with default structure
+                positions.forEach(position => {
+                    state.candidates.SSG[position] = [];
+                    state.candidates.FLP[position] = [];
+                });
+            }
+
+            // Load votes from localStorage
+            const storedVotes = localStorage.getItem('votingResults');
+            if (storedVotes) {
+                state.votes = JSON.parse(storedVotes);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('votingCandidates', JSON.stringify(state.candidates));
+            localStorage.setItem('votingResults', JSON.stringify(state.votes));
+        }
+
+        function initializeApp() {
+            showPage('loginPage');
+            updateNavigation();
+        }
+
+        function setupEventListeners() {
+            // Login form
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Admin login form
+            document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
+            
+            // Add candidate form
+            document.getElementById('addCandidateForm').addEventListener('submit', handleAddCandidate);
+
+            // Admin login link
+            document.querySelector('a[href="#"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                showAdminModal();
+            });
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Simulate Gmail authentication (in real app, this would be OAuth)
+            if (email.includes('@gmail.com') && password.length >= 6) {
+                // Check if user has already voted
+                const hasVoted = localStorage.getItem(voted_${email});
+                if (hasVoted) {
+                    alert('You have already voted in this election.');
+                    return;
+                }
+
+                state.currentUser = email;
+                state.isAdmin = false;
+                showPage('votingPage');
+                initializeVotingPage();
+                updateNavigation();
+            } else {
+                alert('Please enter a valid Gmail address and password (minimum 6 characters).');
+            }
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            // Simple admin authentication (in real app, this would be more secure)
+            if (username === 'admin' && password === 'admin123') {
+                state.currentUser = 'admin';
+                state.isAdmin = true;
+                closeAdminModal();
+                showPage('adminDashboard');
+                loadAdminDashboard();
+                updateNavigation();
+            } else {
+                alert('Invalid admin credentials. Use username: admin, password: admin123');
+            }
+        }
+
+        function showAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+            document.getElementById('adminLoginForm').reset();
+        }
+
+        function showAddCandidateModal(org) {
+            document.getElementById('candidateOrg').value = org;
+            document.getElementById('addCandidateModal').classList.remove('hidden');
+        }
+
+        function closeAddCandidateModal() {
+            document.getElementById('addCandidateModal').classList.add('hidden');
+            document.getElementById('addCandidateForm').reset();
+        }
+
+        function handleAddCandidate(e) {
+            e.preventDefault();
+            const name = document.getElementById('candidateName').value;
+            const position = document.getElementById('candidatePosition').value;
+            const org = document.getElementById('candidateOrg').value;
+
+            // Add candidate to state
+            if (!state.candidates[org][position]) {
+                state.candidates[org][position] = [];
+            }
+            
+            const candidateId = Date.now().toString();
+            state.candidates[org][position].push({
+                id: candidateId,
+                name: name,
+                position: position,
+                organization: org
+            });
+
+            saveData();
+            loadAdminDashboard();
+            closeAddCandidateModal();
+        }
+
+        function removeCandidate(org, position, candidateId) {
+            if (confirm('Are you sure you want to remove this candidate?')) {
+                state.candidates[org][position] = state.candidates[org][position].filter(c => c.id !== candidateId);
+                saveData();
+                loadAdminDashboard();
+            }
+        }
+
+        function loadAdminDashboard() {
+            loadCandidatesList('SSG', 'ssgCandidates');
+            loadCandidatesList('FLP', 'flpCandidates');
+            loadResults();
+        }
+
+        function loadCandidatesList(org, containerId) {
+            const container = document.getElementById(containerId);
+            let html = '';
+
+            positions.forEach(position => {
+                const candidates = state.candidates[org][position] || [];
+                html += `
+                    <div class="border rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="font-semibold text-lg text-gray-800">${position}</h4>
+                            <span class="position-badge">${candidates.length} candidate(s)</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${candidates.map(candidate => `
+                                <div class="flex items-center justify-between bg-gray-50 p-3 rounded">
+                                    <span class="font-medium">${candidate.name}</span>
+                                    <button onclick="removeCandidate('${org}', '${position}', '${candidate.id}')" 
+                                            class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                            ${candidates.length === 0 ? '<p class="text-gray-500 text-sm">No candidates added yet</p>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function loadResults() {
+            const container = document.getElementById('resultsContainer');
+            let html = '';
+
+            ['SSG', 'FLP'].forEach(org => {
+                html += `
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h4 class="text-xl font-bold text-gray-800 mb-4">${org} Results</h4>
+                        <div class="space-y-4">
+                `;
+
+                positions.forEach(position => {
+                    const candidates = state.candidates[org][position] || [];
+                    const positionVotes = state.votes[`${org}_${position}`] || {};
+                    
+                    html += `
+                        <div class="bg-white p-4 rounded border">
+                            <h5 class="font-semibold text-gray-700 mb-2">${position}</h5>
+                            ${candidates.map(candidate => {
+                                const voteCount = positionVotes[candidate.id] || 0;
+                                return `
+                                    <div class="flex justify-between items-center py-1">
+                                        <span>${candidate.name}</span>
+                                        <span class="font-bold text-indigo-600">${voteCount} votes</span>
+                                    </div>
+                                `;
+                            }).join('')}
+                            ${candidates.length === 0 ? '<p class="text-gray-500 text-sm">No candidates</p>' : ''}
+                        </div>
+                    `;
+                });
+
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        function initializeVotingPage() {
+            switchVotingTab('SSG');
+        }
+
+        function switchVotingTab(org) {
+            state.currentVotingTab = org;
+            
+            // Update tab buttons
+            document.getElementById('ssgTab').className = org === 'SSG' 
+                ? 'px-6 py-2 rounded-full bg-white text-indigo-600 font-semibold'
+                : 'px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold';
+            
+            document.getElementById('flpTab').className = org === 'FLP' 
+                ? 'px-6 py-2 rounded-full bg-white text-indigo-600 font-semibold'
+                : 'px-6 py-2 rounded-full bg-indigo-500 text-white font-semibold';
+
+            loadVotingForm(org);
+        }
+
+        function loadVotingForm(org) {
+            const container = document.getElementById('votingContainer');
+            let html = <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">${org} Election Ballot</h3>;
+
+            positions.forEach(position => {
+                const candidates = state.candidates[org][position] || [];
+                if (candidates.length > 0) {
+                    html += `
+                        <div class="vote-card p-6 mb-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-user-tie text-indigo-600 text-xl mr-3"></i>
+                                <h4 class="text-xl font-semibold text-gray-800">${position}</h4>
+                            </div>
+                            <div class="space-y-3">
+                                ${candidates.map(candidate => `
+                                    <label class="candidate-option flex items-center p-4 rounded-lg cursor-pointer">
+                                        <input type="radio" name="${org}_${position}" value="${candidate.id}" 
+                                               onchange="handleVoteSelection('${org}', '${position}', '${candidate.id}')"
+                                               class="mr-4 text-indigo-600 focus:ring-indigo-500">
+                                        <div class="flex-1">
+                                            <span class="font-medium text-gray-800">${candidate.name}</span>
+                                            <p class="text-sm text-gray-600">Candidate for ${position}</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-400"></i>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (html === <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">${org} Election Ballot</h3>) {
+                html += `
+                    <div class="text-center py-12">
+                        <i class="fas fa-info-circle text-gray-400 text-4xl mb-4"></i>
+                        <p class="text-gray-600">No candidates available for ${org} elections yet.</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function handleVoteSelection(org, position, candidateId) {
+            if (!state.userVotes[org]) {
+                state.userVotes[org] = {};
+            }
+            state.userVotes[org][position] = candidateId;
+
+            // Add visual feedback
+            const radioButton = document.querySelector(input[name="${org}_${position}"][value="${candidateId}"]);
+            const label = radioButton.closest('.candidate-option');
+            
+            // Remove selected class from all options in this position
+            document.querySelectorAll(input[name="${org}_${position}"]).forEach(radio => {
+                radio.closest('.candidate-option').classList.remove('selected');
+            });
+            
+            // Add selected class to chosen option
+            label.classList.add('selected');
+        }
+
+        function submitVotes() {
+            if (Object.keys(state.userVotes.SSG).length === 0 && Object.keys(state.userVotes.FLP).length === 0) {
+                alert('Please select at least one candidate before submitting your vote.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to submit your votes? This action cannot be undone.')) {
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            // Simulate processing time
+            setTimeout(() => {
+                // Record votes
+                ['SSG', 'FLP'].forEach(org => {
+                    Object.entries(state.userVotes[org]).forEach(([position, candidateId]) => {
+                        const voteKey = ${org}_${position};
+                        if (!state.votes[voteKey]) {
+                            state.votes[voteKey] = {};
+                        }
+                        if (!state.votes[voteKey][candidateId]) {
+                            state.votes[voteKey][candidateId] = 0;
+                        }
+                        state.votes[voteKey][candidateId]++;
+                    });
+                });
+
+                // Mark user as voted
+                localStorage.setItem(voted_${state.currentUser}, 'true');
+                
+                // Save votes
+                saveData();
+
+                // Hide loading
+                document.getElementById('loadingOverlay').classList.add('hidden');
+
+                // Show success page
+                document.getElementById('voteTimestamp').textContent = new Date().toLocaleString();
+                showPage('successPage');
+                updateNavigation();
+            }, 2000);
+        }
+
+        function exportResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                results: state.votes,
+                candidates: state.candidates
+            };
+
+            const dataStr = JSON.stringify(results, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = voting_results_${new Date().toISOString().split('T')[0]}.json;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        function showPage(pageId) {
+            // Hide all pages
+            ['loginPage', 'adminDashboard', 'votingPage', 'successPage'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function updateNavigation() {
+            const navActions = document.getElementById('navActions');
+            
+            if (state.currentUser) {
+                navActions.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <span class="text-indigo-200">
+                            <i class="fas fa-user mr-1"></i>
+                            ${state.isAdmin ? 'Admin' : state.currentUser}
+                        </span>
+                        <button onclick="logout()" class="bg-indigo-500 hover:bg-indigo-400 px-4 py-2 rounded-md transition-colors">
+                            <i class="fas fa-sign-out-alt mr-1"></i>
+                            Logout
+                        </button>
+                    </div>
+                `;
+            } else {
+                navActions.innerHTML = '';
+            }
+        }
+
+        function logout() {
+            state.currentUser = null;
+            state.isAdmin = false;
+            state.userVotes = { SSG: {}, FLP: {} };
+            showPage('loginPage');
+            updateNavigation();
+            
+            // Reset forms
+            document.getElementById('loginForm').reset();
+            document.getElementById('adminLoginForm').reset();
+        }
+
+        // Prevent form resubmission on page refresh
+        window.addEventListener('beforeunload', function() {
+            if (state.currentUser && !state.isAdmin) {
+                return 'Are you sure you want to leave? Your votes may not be saved.';
+            }
+        });
+    </script>
+</body>
+</html>
